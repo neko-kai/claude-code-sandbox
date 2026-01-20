@@ -125,7 +125,8 @@ if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ];
 fi
 
 TARGET_DIR="${TARGET_DIR:-$(pwd)}"
-TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null)"
+# realpath -m requires GNU coreutils; macOS BSD realpath doesn't support -m
+TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null || realpath "${TARGET_DIR}" 2>/dev/null || echo "${TARGET_DIR}")"
 WRITE_PROFILE_FILE="${WRITE_PROFILE_FILE:-$( (mkdir -p "${HOME}/.config/claude-sandbox" && mktemp "${HOME}/.config/claude-sandbox/profile.XXXXXXXXXX.sb") 2>/dev/null || mktemp "/tmp/claude-sandbox-profile.XXXXXXXXXX.sb")}"
 NO_WORKAROUND="${NO_WORKAROUND:-0}"
 
