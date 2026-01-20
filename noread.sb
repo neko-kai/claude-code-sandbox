@@ -48,6 +48,9 @@
     (literal (string-append (param "HOME_DIR") "/.gitconfig"))
     ;; Nix configuration
     (subpath (string-append (param "HOME_DIR") "/.config/nix"))
+    ;; Nix profile binaries (symlinks to /nix/store)
+    (subpath (string-append (param "HOME_DIR") "/.nix-profile"))
+    (subpath (string-append (param "HOME_DIR") "/.local/state/nix"))
 )
 
 ;; Allow process execution and forking (children inherit policy)
