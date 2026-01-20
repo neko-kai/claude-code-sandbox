@@ -158,6 +158,7 @@
 ;; Allow mach lookups for essential services
 (allow mach-lookup
     (global-name "com.apple.sysmond")  ; For process listing
+    (global-name "com.apple.FSEvents")  ; For Node.js file watching
 )
 
 ;; Allow file attribute operations needed for file creation
