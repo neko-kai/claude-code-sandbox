@@ -125,6 +125,7 @@
     (subpath (string-append (param "HOME_DIR") "/.claude"))
     (literal (string-append (param "HOME_DIR") "/.claude.json"))
     (literal (string-append (param "HOME_DIR") "/.claude.json.backup"))
+    (subpath (string-append (param "HOME_DIR") "/Library/Caches/claude-cli-nodejs"))
 
     ;; Gemini configuraiton
     (subpath (string-append (param "HOME_DIR") "/.gemini"))
