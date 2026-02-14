@@ -89,6 +89,8 @@
     (sysctl-name "hw.machine")
     (sysctl-name "hw.memsize")
     (sysctl-name "hw.ncpu")
+    ;; Needed for Lix
+    (sysctl-name "hw.pagesize")
     (sysctl-name "hw.pagesize_compat")
     (sysctl-name "hw.physicalcpu_max")
     (sysctl-name "hw.tbfrequency_compat")
