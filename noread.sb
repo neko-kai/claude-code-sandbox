@@ -165,6 +165,7 @@
 (allow mach-lookup
     (global-name "com.apple.sysmond")  ; For process listing
     (global-name "com.apple.FSEvents")  ; For Node.js file watching
+    (global-name "com.apple.SystemConfiguration.DNSConfiguration")  ; For DNS resolution in Lix
 )
 
 ;; Allow file attribute operations needed for file creation
