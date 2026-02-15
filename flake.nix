@@ -21,7 +21,7 @@
 
           installPhase = ''
             runHook preInstall
-            PREFIX=$out ./install
+            PREFIX=$out bash ./install
             runHook postInstall
           '';
 
