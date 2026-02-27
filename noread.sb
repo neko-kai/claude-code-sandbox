@@ -49,6 +49,7 @@
 (allow file-read*
     ;; Git configuration (for commits)
     (subpath (string-append (param "HOME_DIR") "/.config/git"))
+    (subpath (string-append (param "HOME_DIR") "/.config/jj"))
     (literal (string-append (param "HOME_DIR") "/.gitconfig"))
     ;; Nix configuration
     (subpath (string-append (param "HOME_DIR") "/.config/nix"))
