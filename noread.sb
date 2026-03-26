@@ -56,6 +56,8 @@
     ;; Nix profile binaries (symlinks to /nix/store)
     (subpath (string-append (param "HOME_DIR") "/.nix-profile"))
     (subpath (string-append (param "HOME_DIR") "/.local/state/nix"))
+    ;; gh CLI
+    (subpath (string-append (param "HOME_DIR") "/.config/gh"))
 )
 
 ;; Allow process execution and forking (children inherit policy)
