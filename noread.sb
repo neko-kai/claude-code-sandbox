@@ -269,7 +269,7 @@
     (regex (string-append "^" (param "HOME_DIR") "/Library/Preferences/ByHost/\\.GlobalPreferences\\..*\\.plist$"))
 )
 
-;; read/write ~/.sbt & coursier caches
+;; read/write ~/.sbt, coursier and bloop caches
 (allow file-read* file-write*
     (subpath (string-append (param "HOME_DIR") "/.sbt"))
     (subpath (string-append (param "HOME_DIR") "/.ivy2"))
@@ -277,6 +277,7 @@
     (subpath (string-append (param "HOME_DIR") "/.jgit"))
     (subpath (string-append (param "HOME_DIR") "/.config/jgit"))
     (subpath (string-append (param "HOME_DIR") "/Library/Caches/Coursier"))
+    (subpath (string-append (param "HOME_DIR") "/Library/Caches/ScalaCli"))
 )
 
 ;; read [~]/Library/Java
