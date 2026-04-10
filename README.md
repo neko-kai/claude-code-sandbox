@@ -78,13 +78,19 @@ claude-sandbox bash
 # run claude
 claude-sandbox claude
 
-# view generated sandbox-exec profile
-claude-sandbox --write-profile-file curprofile.sb -- cat curprofile.sb
+# write generated sandbox-exec profile to a file and exit
+claude-sandbox --write-profile curprofile.sb
+
+# dump the built-in noread.sb to a file for customization
+claude-sandbox --write-base-profile custom.sb
+
+# use a custom profile template instead of the built-in noread.sb
+claude-sandbox --use-profile custom.sb -- claude
 ```
 
 ## How to add access to more directories
 
-Modify `noread.sb` and run `./install` again.
+Modify `noread.sb` and run `./install` again, or use `--use-profile` with a custom profile template.
 
 Find out which rules to add by running `Console.app` and filtering errors by 'sandbox'
 

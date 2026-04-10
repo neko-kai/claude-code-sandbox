@@ -4,16 +4,20 @@ set -uo pipefail
 
 function usage() {
     cat >&2 <<EOF
-Usage: $0 [--target-dir <dir>] [--write-profile-file <file>] [--no-workaround] [--] <program> <arguments>
+Usage: $0 [--target-dir <dir>] [--use-profile <file>] [--write-profile <file>] [--write-base-profile <file>] [--no-workaround] [--] <program> <arguments>
 
 Options:
   --target-dir <dir>            Directory to generate claude workaround rules "(allow file-read* literal(..))" for. (default: .)
-  --write-profile-file <file>   Write sandbox-exec profile to specified file. (default: temp file in ~/.config/claude-sandbox)
+  --use-profile <file>          Use specified file as base profile template instead of the built-in noread.sb.
+  --write-profile <file>        Write the generated sandbox profile to specified file and exit.
+  --write-base-profile <file>   Write the built-in noread.sb profile to specified file and exit.
   --no-workaround               Don't generate workaround rules, maybe use this when claude-code is fixed!
   -h, --help                    Show this help message
 
 Example:
-  $0 --target-dir /path/to/dir --write-profile-file profile.sb
+  $0 --target-dir /path/to/dir -- claude
+  $0 --use-profile custom.sb -- claude
+  $0 --write-profile profile.sb
 EOF
     exit 1
 }
@@ -78,8 +82,16 @@ while [[ $# -gt 0 ]]; do
             TARGET_DIR="$2"
             shift 2
             ;;
-        --write-profile-file)
-            WRITE_PROFILE_FILE="$2"
+        --use-profile)
+            USE_PROFILE="$2"
+            shift 2
+            ;;
+        --write-profile)
+            WRITE_PROFILE="$2"
+            shift 2
+            ;;
+        --write-base-profile)
+            WRITE_BASE_PROFILE="$2"
             shift 2
             ;;
         --no-workaround)
@@ -124,31 +136,58 @@ if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ];
     exit 1
 fi
 
+# If --write-base-profile is set, dump the built-in profile and exit
+if [[ -n "${WRITE_BASE_PROFILE:-}" ]]; then
+    echo "${NOREAD_SB_CONTENT}" > "${WRITE_BASE_PROFILE}"
+    exit 0
+fi
+
 TARGET_DIR="${TARGET_DIR:-$(pwd)}"
 # realpath -m requires GNU coreutils; macOS BSD realpath doesn't support -m
 TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null || realpath "${TARGET_DIR}" 2>/dev/null || echo "${TARGET_DIR}")"
-WRITE_PROFILE_FILE="${WRITE_PROFILE_FILE:-$( (mkdir -p "${HOME}/.config/claude-sandbox" && mktemp "${HOME}/.config/claude-sandbox/profile.sb.XXXXXXXXXX") 2>/dev/null || mktemp "/tmp/claude-sandbox-profile.sb.XXXXXXXXXX")}"
 NO_WORKAROUND="${NO_WORKAROUND:-0}"
 
+# Determine the base profile content
+if [[ -n "${USE_PROFILE:-}" ]]; then
+    if [[ ! -f "${USE_PROFILE}" ]]; then
+        echo "Error: Profile file not found: ${USE_PROFILE}" >&2
+        exit 1
+    fi
+    BASE_PROFILE_CONTENT="$(cat "${USE_PROFILE}")"
+else
+    BASE_PROFILE_CONTENT="${NOREAD_SB_CONTENT}"
+fi
+
+# Build the full profile
 if [[ "${NO_WORKAROUND}" == 0 ]]; then
     WORKAROUND_RULES="$(generate_workaround_allow_read_rules "${TARGET_DIR}")"
 
-    # append generated rules
-    {
-        echo "${NOREAD_SB_CONTENT}"
-        echo ""
-        echo ";; Generated allow-read rules for: ${TARGET_DIR}"
-        echo ";; for some reason claude-code needs list access to all parent directories of TARGET_DIR"
-        echo ";; - it doesn't need access to read the contents of directories, only the directories"
-        echo ";; themselves. Otherwise it will set PATH to "" and disable colored output"
-        echo "${WORKAROUND_RULES}"
-    } > "${WRITE_PROFILE_FILE}"
+    FULL_PROFILE="$(cat <<PROFILE_EOF
+${BASE_PROFILE_CONTENT}
+
+;; Generated allow-read rules for: ${TARGET_DIR}
+;; for some reason claude-code needs list access to all parent directories of TARGET_DIR
+;; - it doesn't need access to read the contents of directories, only the directories
+;; themselves. Otherwise it will set PATH to "" and disable colored output
+${WORKAROUND_RULES}
+PROFILE_EOF
+)"
 else
-    echo "${NOREAD_SB_CONTENT}" > "${WRITE_PROFILE_FILE}"
+    FULL_PROFILE="${BASE_PROFILE_CONTENT}"
 fi
+
+# If --write-profile is set, write and exit
+if [[ -n "${WRITE_PROFILE:-}" ]]; then
+    echo "${FULL_PROFILE}" > "${WRITE_PROFILE}"
+    exit 0
+fi
+
+# Write to a temp file for sandbox-exec
+PROFILE_FILE="$( (mkdir -p "${HOME}/.config/claude-sandbox" && mktemp "${HOME}/.config/claude-sandbox/profile.sb.XXXXXXXXXX") 2>/dev/null || mktemp "/tmp/claude-sandbox-profile.sb.XXXXXXXXXX")"
+echo "${FULL_PROFILE}" > "${PROFILE_FILE}"
 
 # Trap to clean up the temp file on exit
 # shellcheck disable=SC2064
-trap "rm -f '${WRITE_PROFILE_FILE}'" EXIT
+trap "rm -f '${PROFILE_FILE}'" EXIT
 
-sandbox-exec -f "${WRITE_PROFILE_FILE}" -D "TARGET_DIR=${TARGET_DIR}" -D "TMP_DIR=/tmp" -D "HOME_DIR=${HOME}" -D "CACHE_DIR=${HOME}/.cache" "${POSITIONAL_ARGS[@]}"
+sandbox-exec -f "${PROFILE_FILE}" -D "TARGET_DIR=${TARGET_DIR}" -D "TMP_DIR=/tmp" -D "HOME_DIR=${HOME}" -D "CACHE_DIR=${HOME}/.cache" "${POSITIONAL_ARGS[@]}"
