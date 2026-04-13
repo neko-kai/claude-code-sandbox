@@ -53,6 +53,7 @@
     (literal (string-append (param "HOME_DIR") "/.gitconfig"))
     ;; Nix configuration
     (subpath (string-append (param "HOME_DIR") "/.config/nix"))
+    (subpath (string-append (param "HOME_DIR") "/.local/share/nix"))
     ;; Nix profile binaries (symlinks to /nix/store)
     (subpath (string-append (param "HOME_DIR") "/.nix-profile"))
     (subpath (string-append (param "HOME_DIR") "/.local/state/nix"))
