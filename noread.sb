@@ -106,6 +106,7 @@
     (sysctl-name "kern.osversion")
     (sysctl-name "kern.secure_kernel")
     (sysctl-name "kern.version")
+    (sysctl-name "kern.iossupportversion")
 )
 
 ;; Allow file writes to specific paths only
@@ -140,6 +141,12 @@
     ;; Gemini configuration
     (subpath (string-append (param "HOME_DIR") "/.gemini"))
 
+    ;; Codex configuration
+    (subpath (string-append (param "HOME_DIR") "/.codex"))
+
+    ;; Nix defexprs
+    (subpath (string-append (param "HOME_DIR") "/.nix-defexpr"))
+
     ;; Standard I/O devices
     (literal "/dev/stdout")
     (literal "/dev/stderr")
@@ -149,6 +156,7 @@
     (literal "/dev/ptmx")
     (literal "/dev/urandom")
     (literal "/dev/random")
+    (literal "/dev/fd")
     (regex #"^/dev/tty*")
     (regex #"^/dev/pty*")
 )

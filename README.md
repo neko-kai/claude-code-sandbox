@@ -19,7 +19,7 @@ This project provides a macOS `sandbox-exec` profile that limits `claude`'s acce
   - Current working directory (`TARGET_DIR`)
   - Temporary directories (`/tmp`, `/var/folders`)
   - Cache directory (`~/.cache`)
-  - Claude & Gemini configuration (`~/.claude`, `~/.gemini`)
+  - Claude, Gemini & Codex configuration (`~/.claude`, `~/.gemini`, `~/.codex`)
 
 - **Network Access**: Full network access enabled (required for Claude API)
 - **Keychain Access**: Allows reading from macOS Keychain for API key storage
