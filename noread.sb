@@ -61,6 +61,11 @@
     (subpath (string-append (param "HOME_DIR") "/.config/gh"))
 )
 
+;; necessary for resolving flakerefs in Nix
+(allow file-read-metadata
+    (literal (string-append (param "HOME_DIR") "/.config"))
+)
+
 ;; Allow process execution and forking (children inherit policy)
 (allow process-exec)
 (allow process-fork)
