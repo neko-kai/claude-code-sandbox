@@ -210,12 +210,14 @@
   (global-name "com.apple.coreservices.launchservicesd")
 )
 
-;; The following is required to get Claude API Key from macOS Keychain (if logged in via /login)
+;; The following is required to read/write macOS Keychain to store Claude Credentials (for /login)
 
-;; Specifically allow login keychain
-(allow file-read*
-    (literal (string-append (param "HOME_DIR") "/Library/Keychains/login.keychain-db"))
-)
+(allow sysctl-read
+  (sysctl-name "security.mac.sandbox.sentinel"))
+
+(allow file-read* file-write* file-write-create
+  (subpath
+    (string-append (param "HOME_DIR") "/Library/Keychains")))
 
 ;; Critical: Allow communication with securityd (keychain daemon)
 (allow mach-lookup
