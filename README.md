@@ -92,9 +92,19 @@ claude-sandbox --use-profile custom.sb -- claude
 
 Modify `noread.sb` and run `./install` again, or use `--use-profile` with a custom profile template.
 
-Find out which rules to add by running `Console.app` and filtering errors by 'sandbox'
+Find out which rules to add by watching sandbox denials with:
+
+```bash
+/usr/bin/log stream --style compact --predicate 'eventMessage CONTAINS "Sandbox:" AND eventMessage CONTAINS "deny"'
+```
+
+Or by running `Console.app` and filtering errors by 'sandbox'
 
 ## How It Works
 
 The `claude-sandbox` wrapper uses macOS's `sandbox-exec` command to apply a security profile defined in `noread.sb`. This sandbox profile is based on the [Para sandboxing profile](https://github.com/2mawi2/para/blob/218259b6e260be43334f308a74108f31920f7ca4/src/core/sandbox/profiles/standard.sb) and [anthropic's sandbox-runtime's dynamic profile](https://github.com/anthropic-experimental/sandbox-runtime/blob/1bafa66a2c3ebc52569fc0c1a868e85e778f66a0/src/sandbox/macos-sandbox-utils.ts#L200), with additional configuration for Claude Code compatibility.
 Specifically, for some reason claude-code needs list access to all parent directories of current working directory - it doesn't need read access to the content of directories, only access to list the content of directories. Without this access it will set PATH in the agent to "" and disable colored output. To avoid this the script adds these listing rules dynamically.
+
+## Design Note
+
+This project is intentionally as primitive as possible.
