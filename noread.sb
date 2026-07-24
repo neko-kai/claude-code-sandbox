@@ -292,6 +292,9 @@
     (subpath (string-append (param "HOME_DIR") "/.m2"))
     (subpath (string-append (param "HOME_DIR") "/.jgit"))
     (subpath (string-append (param "HOME_DIR") "/.config/jgit"))
+    ;; sbt 2.0 moved its global base to the XDG location ~/.config/sbt/<ver>
+    (subpath (string-append (param "HOME_DIR") "/.config/sbt"))
+    (subpath (string-append (param "HOME_DIR") "/Library/Caches/sbt"))
     (subpath (string-append (param "HOME_DIR") "/Library/Caches/Coursier"))
     (subpath (string-append (param "HOME_DIR") "/Library/Caches/ScalaCli"))
     (subpath (string-append (param "HOME_DIR") "/Library/Caches/com.thesamet.scalapb.protocbridge.protocbridge"))
