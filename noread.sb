@@ -11,6 +11,11 @@
 ;; Allow network access (required for Claude API)
 (allow network*)
 
+;; Block launchd user listener sockets such as SSH_AUTH_SOCK without denying
+;; unrelated /private/var/run sockets such as mDNSResponder.
+(deny network-outbound
+  (regex #"^/private/var/run/com\.apple\.launchd\.[^/]+/Listeners$"))
+
 ;; Deny reading files anywhere on host (allow rules override this below)
 (deny file-read*)
 
@@ -38,6 +43,10 @@
 (allow file-read-metadata
   (subpath "/run"))
 
+;; Hide launchd user listener paths so denied sockets cannot be discovered.
+(deny file-read* file-read-metadata
+  (regex #"^/private/var/run/com\.apple\.launchd\.[^/]+(/.*)?$"))
+
 ;; === IMPORTANT === MODIFY this section to include ALL directories leading to claude workdir ===
 ;; for some reason claude-code needs list access to all parent directories of TARGET_DIR
 ;; - it doesn't need access to read the contents of directories, only the directories
@@ -45,6 +54,11 @@
 (allow file-read*
   (literal "/")
   )
+
+;; Some tools need to stat ~/.config; allow stat, but keep its contents unreadable.
+(allow file-read-metadata
+  (literal (string-append (param "HOME_DIR") "/.config"))
+)
 
 (allow file-read*
     ;; Git configuration (for commits)
@@ -149,10 +163,15 @@
     ;; Codex configuration
     (subpath (string-append (param "HOME_DIR") "/.codex"))
 
+    ;; Codex >= 0.94 reads shared skills from ~/.agents/skills.
+    (subpath (string-append (param "HOME_DIR") "/.agents"))
+
     ;; Nix defexprs
     (subpath (string-append (param "HOME_DIR") "/.nix-defexpr"))
 
+
     ;; Standard I/O devices
+    (literal "/dev/stdin")
     (literal "/dev/stdout")
     (literal "/dev/stderr")
     (literal "/dev/null")
@@ -161,7 +180,8 @@
     (literal "/dev/ptmx")
     (literal "/dev/urandom")
     (literal "/dev/random")
-    (literal "/dev/fd")
+    ;; Allow entire /dev/fd/* subpath, because standard I/O symlinks resolve to /dev/fd/{0,1,2}
+    (subpath "/dev/fd")
     (regex #"^/dev/tty*")
     (regex #"^/dev/pty*")
 )
@@ -270,6 +290,15 @@
        ipc-posix-sem-unlink
        (ipc-posix-name-regex #"^/cSunMiscSignal-[0-9]+$"))
 
+;; nx's native Node binding maps this CFNotificationCenter region at startup;
+;; denial can trigger heap corruption in its native error path.
+(allow ipc-posix-shm*
+    (ipc-posix-name "apple.shm.notification_center"))
+
+;; Node native modules and Apple frameworks may use SysV semaphores at startup;
+;; denial can trigger the same native failure path.
+(allow ipc-sysv-sem)
+
 ;; Java needs system sockets (domain:32 is AF_NDRV for network device raw access)
 (allow system-socket)
 
@@ -285,6 +314,11 @@
 (allow file-read-data
     (literal "/dev")
 )
+
+;; nx's native Node binding stats /dev entries during device discovery;
+;; metadata-only access permits that probe without exposing device contents.
+(allow file-read-metadata
+    (subpath "/dev"))
 
 ;; Java needs to read various preference files
 (allow file-read*
