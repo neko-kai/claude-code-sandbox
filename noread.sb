@@ -302,3 +302,10 @@
     (subpath (string-append (param "HOME_DIR") "/Library/Java"))
     (subpath "/Library/Java")
 )
+
+;; Enterprise-managed policy settings (read-only). Claude Code reads managed
+;; settings from this directory on startup when an organization ships a managed
+;; configuration (managed-settings.json / managed-settings.d).
+(allow file-read*
+    (subpath "/Library/Application Support/ClaudeCode")
+)
