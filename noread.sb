@@ -259,6 +259,17 @@
 ;;     (ipc-posix-name "apple.shm.notification_center")
 ;; )
 
+;; GraalVM native-image needs a named semaphore for signal dispatch on macOS:
+;; https://github.com/neko-kai/claude-code-sandbox/pull/12
+;; Restrict the grant to GraalVM's PID-derived name and required operations so
+;; sandboxed processes cannot access unrelated same-user semaphores.
+(allow ipc-posix-sem-create
+       ipc-posix-sem-open
+       ipc-posix-sem-post
+       ipc-posix-sem-wait
+       ipc-posix-sem-unlink
+       (ipc-posix-name-regex #"^/cSunMiscSignal-[0-9]+$"))
+
 ;; Java needs system sockets (domain:32 is AF_NDRV for network device raw access)
 (allow system-socket)
 
