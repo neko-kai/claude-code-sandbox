@@ -4,11 +4,12 @@ set -uo pipefail
 
 function usage() {
     cat >&2 <<EOF
-Usage: $0 [--target-dir <dir>] [--use-profile <file>] [--write-profile <file>] [--write-base-profile <file>] [--no-workaround] [--] <program> <arguments>
+Usage: $0 [--target-dir <dir>] [--use-profile <file>] [--append-profile <file>] [--write-profile <file>] [--write-base-profile <file>] [--no-workaround] [--] <program> <arguments>
 
 Options:
   --target-dir <dir>            Directory to generate claude workaround rules "(allow file-read* literal(..))" for. (default: .)
   --use-profile <file>          Use specified file as base profile template instead of the built-in noread.sb.
+  --append-profile <file>       Append specified file after all other sandbox profile rules.
   --write-profile <file>        Write the generated sandbox profile to specified file and exit.
   --write-base-profile <file>   Write the built-in noread.sb profile to specified file and exit.
   --no-workaround               Don't generate workaround rules, maybe use this when claude-code is fixed!
@@ -84,6 +85,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --use-profile)
             USE_PROFILE="$2"
+            shift 2
+            ;;
+        --append-profile)
+            APPEND_PROFILE="$2"
             shift 2
             ;;
         --write-profile)
@@ -174,6 +179,14 @@ PROFILE_EOF
 )"
 else
     FULL_PROFILE="${BASE_PROFILE_CONTENT}"
+fi
+
+if [[ -n "${APPEND_PROFILE:-}" ]]; then
+    if [[ ! -f "${APPEND_PROFILE}" ]]; then
+        echo "Error: Profile file not found: ${APPEND_PROFILE}" >&2
+        exit 1
+    fi
+    FULL_PROFILE="${FULL_PROFILE}"$'\n\n'"$(cat "${APPEND_PROFILE}")"
 fi
 
 # If --write-profile is set, write and exit
