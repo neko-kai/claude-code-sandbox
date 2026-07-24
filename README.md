@@ -108,3 +108,4 @@ Specifically, for some reason claude-code needs list access to all parent direct
 ## Design Note
 
 This project is intentionally as primitive as possible.
+Please customize it for your needs by inspecting denial log and adding custom rules - or rather, prompt your LLM to do it, e.g. by feeding it this README file.
