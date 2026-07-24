@@ -259,6 +259,13 @@
 ;;     (ipc-posix-name "apple.shm.notification_center")
 ;; )
 
+;; GraalVM native-image binaries open a POSIX *named* semaphore via sem_open()
+;; for their signal-dispatch thread during VM bootstrap. macOS has no
+;; unnamed-semaphore fallback, so without this the binary crashes at startup,
+;; before any -XX flag is parsed:
+;;   CSunMiscSignal.create() failed.  errno: 1  Operation not permitted
+(allow ipc-posix-sem*)
+
 ;; Java needs system sockets (domain:32 is AF_NDRV for network device raw access)
 (allow system-socket)
 
