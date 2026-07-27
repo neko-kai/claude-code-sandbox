@@ -73,6 +73,12 @@
     (subpath (string-append (param "HOME_DIR") "/.local/state/nix"))
     ;; gh CLI
     (subpath (string-append (param "HOME_DIR") "/.config/gh"))
+    ;; MCP configuration
+    (subpath (string-append (param "HOME_DIR") "/.config/mcp"))
+    ;; direnv configuration
+    (subpath (string-append (param "HOME_DIR") "/.config/direnv"))
+    (subpath (string-append (param "HOME_DIR") "/.local/share/direnv"))
+    (literal (string-append (param "HOME_DIR") "/.direnvrc"))
 )
 
 ;; necessary for resolving flakerefs in Nix
