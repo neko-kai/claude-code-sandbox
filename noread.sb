@@ -55,11 +55,6 @@
   (literal "/")
   )
 
-;; Some tools need to stat ~/.config; allow stat, but keep its contents unreadable.
-(allow file-read-metadata
-  (literal (string-append (param "HOME_DIR") "/.config"))
-)
-
 (allow file-read*
     ;; Git configuration (for commits)
     (subpath (string-append (param "HOME_DIR") "/.config/git"))
@@ -82,9 +77,15 @@
 )
 
 ;; necessary for resolving flakerefs in Nix
-(allow file-read-metadata
+;; this rule only matches ~/.config and not any of its children
+;; so they still can't be read unless explicitly allowed
+(allow file-read-data file-read-metadata
     (literal (string-append (param "HOME_DIR") "/.config"))
 )
+
+;; Nix lists /private when resolving /etc and /var
+(allow file-read-data file-read-metadata
+  (literal "/private"))
 
 ;; Allow process execution and forking (children inherit policy)
 (allow process-exec)
