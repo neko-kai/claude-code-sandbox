@@ -74,6 +74,22 @@ function generate_workaround_allow_read_rules() {
     echo "${all_rules}"
 }
 
+function generate_full_profile() {
+    local base_profile_content="$1"
+    local target_dir="$2"
+    local workaround_rules="$3"
+
+    cat <<PROFILE_EOF
+${base_profile_content}
+
+;; Generated allow-read rules for: ${target_dir}
+;; for some reason claude-code needs list access to all parent directories of TARGET_DIR
+;; - it doesn't need access to read the contents of directories, only the directories
+;; themselves. Otherwise it will set PATH to "" and disable colored output
+${workaround_rules}
+PROFILE_EOF
+}
+
 # Array to accumulate positional arguments
 POSITIONAL_ARGS=()
 
@@ -167,16 +183,7 @@ fi
 if [[ "${NO_WORKAROUND}" == 0 ]]; then
     WORKAROUND_RULES="$(generate_workaround_allow_read_rules "${TARGET_DIR}")"
 
-    FULL_PROFILE="$(cat <<PROFILE_EOF
-${BASE_PROFILE_CONTENT}
-
-;; Generated allow-read rules for: ${TARGET_DIR}
-;; for some reason claude-code needs list access to all parent directories of TARGET_DIR
-;; - it doesn't need access to read the contents of directories, only the directories
-;; themselves. Otherwise it will set PATH to "" and disable colored output
-${WORKAROUND_RULES}
-PROFILE_EOF
-)"
+    FULL_PROFILE="$(generate_full_profile "${BASE_PROFILE_CONTENT}" "${TARGET_DIR}" "${WORKAROUND_RULES}")"
 else
     FULL_PROFILE="${BASE_PROFILE_CONTENT}"
 fi
